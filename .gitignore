@@ -1,4 +1,6 @@
 .github/agents
-docs/notion
+.github/PULL_REQUEST_TEMPLATE.md
+docs/
 DOCFORGE-PLAN.md
 GEMINI.md
+README.md
