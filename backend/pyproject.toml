@@ -1,7 +1,23 @@
 [project]
-name = "backend"
+name = "docforge-backend"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.12"
 dependencies = []
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+exclude = ["alembic/versions/*.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "PL"]
+ignore = ["E501"] # Ignore line length generally, but we'll try to keep it clean
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["alembic/"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]

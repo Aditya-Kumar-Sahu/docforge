@@ -1,3 +1,4 @@
+from typing import cast
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
@@ -23,10 +24,10 @@ async def get_current_user(
             algorithms=["HS256"],
             audience="authenticated"
         )
-        user_id: str = payload.get("sub")
-        email: str = payload.get("email")
+        user_id = cast(str | None, payload.get("sub"))
+        email = cast(str | None, payload.get("email"))
         
-        if user_id is None:
+        if user_id is None or email is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
