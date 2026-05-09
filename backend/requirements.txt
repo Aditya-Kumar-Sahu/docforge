@@ -11,3 +11,5 @@ redis
 python-dotenv
 httpx
 python-jose[cryptography]
+tree-sitter
+tree-sitter-python
