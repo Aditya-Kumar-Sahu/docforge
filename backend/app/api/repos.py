@@ -8,8 +8,9 @@ from sse_starlette.sse import EventSourceResponse
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
-from app.models.models import User, Repository
+from app.models.models import User, Repository, Endpoint
 from app.schemas.repos import RepoCreate, RepoRead
+from app.schemas.parser import EndpointRead, EndpointUpdate
 from app.worker import scan_repo
 
 router = APIRouter(prefix="/repos", tags=["repositories"])
@@ -109,3 +110,59 @@ async def scan_progress(
             await asyncio.sleep(1)
 
     return EventSourceResponse(event_generator())
+
+@router.get("/{repo_id}/endpoints", response_model=List[EndpointRead])
+async def list_endpoints(
+    repo_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verify ownership
+    query = select(Repository).where(Repository.id == repo_id, Repository.owner_id == current_user.id)
+    result = await db.execute(query)
+    if not result.scalars().first():
+        raise HTTPException(status_code=404, detail="Repository not found")
+
+    query = select(Endpoint).where(Endpoint.repo_id == repo_id)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+@router.get("/endpoints/{endpoint_id}", response_model=EndpointRead)
+async def get_endpoint(
+    endpoint_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    query = select(Endpoint).join(Repository).where(
+        Endpoint.id == endpoint_id,
+        Repository.owner_id == current_user.id
+    )
+    result = await db.execute(query)
+    endpoint = result.scalars().first()
+    if not endpoint:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+    return endpoint
+
+@router.patch("/endpoints/{endpoint_id}", response_model=EndpointRead)
+async def update_endpoint(
+    endpoint_id: int,
+    endpoint_in: EndpointUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    query = select(Endpoint).join(Repository).where(
+        Endpoint.id == endpoint_id,
+        Repository.owner_id == current_user.id
+    )
+    result = await db.execute(query)
+    endpoint = result.scalars().first()
+    if not endpoint:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+
+    update_data = endpoint_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(endpoint, field, value)
+    
+    await db.commit()
+    await db.refresh(endpoint)
+    return endpoint

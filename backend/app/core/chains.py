@@ -1,6 +1,6 @@
 import json
 from typing import Any, Dict, Optional
-from litellm import completion
+from litellm import acompletion
 from app.core.config import settings
 from app.core.prompts import PROMPT_REGISTRY
 import structlog
@@ -16,8 +16,8 @@ async def analyze_route(raw_ast: Dict[str, Any]) -> Dict[str, Any]:
     )
     
     try:
-        response = completion(
-            model="gemini/gemini-2.0-flash",
+        response = await acompletion(
+            model="gemini/gemini-flash-latest",
             messages=[{"role": "user", "content": prompt}],
             api_key=settings.GEMINI_API_KEY,
             temperature=0.1,
@@ -39,8 +39,8 @@ async def generate_docs(analysis: Dict[str, Any], raw_ast: Dict[str, Any]) -> Di
     )
     
     try:
-        response = completion(
-            model="gemini/gemini-2.0-flash",
+        response = await acompletion(
+            model="gemini/gemini-flash-latest",
             messages=[{"role": "user", "content": prompt}],
             api_key=settings.GEMINI_API_KEY,
             temperature=0.2,
@@ -62,8 +62,8 @@ async def run_quality_gate(docs: Dict[str, Any], raw_ast: Dict[str, Any]) -> Dic
     )
     
     try:
-        response = completion(
-            model="gemini/gemini-2.0-flash",
+        response = await acompletion(
+            model="gemini/gemini-flash-latest",
             messages=[{"role": "user", "content": prompt}],
             api_key=settings.GEMINI_API_KEY,
             temperature=0.1,
