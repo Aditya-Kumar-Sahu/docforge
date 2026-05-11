@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import asyncio
+import json
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from typing import List
+from typing import List, AsyncGenerator, Dict, Any
+from sse_starlette.sse import EventSourceResponse
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.models import User, Repository
 from app.schemas.repos import RepoCreate, RepoRead
+from app.worker import scan_repo
 
 router = APIRouter(prefix="/repos", tags=["repositories"])
 
@@ -16,11 +20,9 @@ async def create_repo(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Check if repo already exists for this user (or full_name is unique)
     query = select(Repository).where(Repository.full_name == repo_in.full_name)
     result = await db.execute(query)
     if result.scalars().first():
-        # In a real app, we might just return the existing one or update it
         raise HTTPException(status_code=400, detail="Repository already registered")
     
     new_repo = Repository(
@@ -50,13 +52,60 @@ async def trigger_scan(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Verify ownership
     query = select(Repository).where(Repository.id == repo_id, Repository.owner_id == current_user.id)
     result = await db.execute(query)
     repo = result.scalars().first()
     if not repo:
         raise HTTPException(status_code=404, detail="Repository not found")
     
-    # Trigger Celery task (to be implemented)
-    # scan_repo.delay(repo_id)
+    # Update status to scanning
+    repo.scan_status = "scanning"
+    await db.commit()
+    
+    # Trigger Celery task
+    scan_repo.delay(repo_id)
     return {"message": "Scan triggered", "repo_id": repo_id}
+
+@router.get("/{repo_id}/scan-progress")
+async def scan_progress(
+    repo_id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verify ownership
+    query = select(Repository).where(Repository.id == repo_id, Repository.owner_id == current_user.id)
+    result = await db.execute(query)
+    repo = result.scalars().first()
+    if not repo:
+        raise HTTPException(status_code=404, detail="Repository not found")
+
+    async def event_generator() -> AsyncGenerator[Dict[str, Any], None]:
+        while True:
+            # If client closes connection, stop
+            if await request.is_disconnected():
+                break
+
+            # Poll database for status
+            # We need a new session or refresh the object
+            async with AsyncSession(db.bind, expire_on_commit=False) as poll_session:
+                q = select(Repository).where(Repository.id == repo_id)
+                res = await poll_session.execute(q)
+                current_repo = res.scalars().first()
+                
+                if current_repo:
+                    yield {
+                        "event": "message",
+                        "id": str(repo_id),
+                        "data": json.dumps({
+                            "status": current_repo.scan_status,
+                            "repo_id": repo_id
+                        })
+                    }
+                    
+                    if current_repo.scan_status in ["completed", "failed"]:
+                        break
+
+            await asyncio.sleep(1)
+
+    return EventSourceResponse(event_generator())

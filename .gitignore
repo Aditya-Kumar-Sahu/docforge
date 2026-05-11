@@ -9,3 +9,39 @@ README.md
 
 .env
 **.venv/
+
+# Python caches and tools
+**/.mypy_cache/
+**/.pytest_cache/
+**/.ruff_cache/
+*.egg-info/
+
+# Python lock files
+**/uv.lock
+.python-version
+
+# Python build and distribution
+**/dist/
+**/build/
+**/.coverage
+**/htmlcov/
+
+# Frontend build outputs
+**/.next/
+**/node_modules/
+
+# Frontend lock files
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+# IDE and editor settings
+**/.vscode/
+**/.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db

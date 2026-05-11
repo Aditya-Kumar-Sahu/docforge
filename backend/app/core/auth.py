@@ -1,5 +1,5 @@
-from typing import cast
-from fastapi import Depends, HTTPException, status
+from typing import cast, Optional
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from app.core.config import settings
@@ -8,12 +8,34 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from sqlalchemy import select
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: AsyncSession = Depends(get_db)
 ) -> User:
+    # Bypass for local manual testing
+    if settings.DEBUG_AUTH:
+        user_id = "debug_user_id"
+        email = "debug@example.com"
+        
+        # Ensure debug user exists
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            user = User(id=user_id, email=email)
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
     token = credentials.credentials
     
     try:

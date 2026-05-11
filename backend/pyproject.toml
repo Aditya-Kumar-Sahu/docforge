@@ -2,6 +2,10 @@
 name = "docforge-backend"
 version = "0.1.0"
 dependencies = [
+    "langchain>=1.2.18",
+    "langchain-community>=0.4.1",
+    "litellm>=1.83.14",
+    "sse-starlette>=3.4.2",
     "tree-sitter>=0.25.2",
     "tree-sitter-python>=0.25.0",
 ]

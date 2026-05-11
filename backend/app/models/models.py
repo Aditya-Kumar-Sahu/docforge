@@ -52,6 +52,8 @@ class Repository(Base):
     full_name: Mapped[str] = mapped_column(String, unique=True)
     github_id: Mapped[int] = mapped_column(Integer, unique=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    scan_status: Mapped[str] = mapped_column(String, default="idle") # idle, scanning, completed, failed
+    last_scan_at: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
     deleted_at: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
     
