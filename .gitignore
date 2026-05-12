@@ -1,47 +1,89 @@
-**__pycache__/
-*.pyc
-.github/agents
-.github/PULL_REQUEST_TEMPLATE.md
-docs/
-DOCFORGE-PLAN.md
-GEMINI.md
-README.md
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-.env
-**.venv/
+# C extensions
+*.so
 
-# Python caches and tools
-**/.mypy_cache/
-**/.pytest_cache/
-**/.ruff_cache/
+# Distribution / packaging
+build/
+dist/
+downloads/
+eggs/
+.eggs/
 *.egg-info/
+pip-wheel-metadata/
 
-# Python lock files
-**/uv.lock
-.python-version
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+backend/.venv/
 
-# Python build and distribution
-**/dist/
-**/build/
-**/.coverage
-**/htmlcov/
+# Environment / secrets
+.env
+.env.*
+.env.local
 
-# Frontend build outputs
-**/.next/
-**/node_modules/
+# Python testing / coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
 
-# Frontend lock files
-**/package-lock.json
-**/yarn.lock
-**/pnpm-lock.yaml
+# Type checkers / caches
+.mypy_cache/
+.pyright/
 
-# IDE and editor settings
-**/.vscode/
-**/.idea/
-*.swp
-*.swo
+# IDEs / editors
+.vscode/
+.idea/
+*.sublime-project
 *.sublime-workspace
 
 # OS files
 .DS_Store
 Thumbs.db
+ehthumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+.parcel-cache/
+
+# Lockfiles (optional to ignore if you want to track them)
+# package-lock.json
+# yarn.lock
+
+# Logs
+*.log
+
+# Docker
+docker-compose.override.yml
+docker-compose.*.yml
+docker-compose.local.yml
+
+# Database
+*.sqlite3
+*.db
+
+# Editor temp files
+*~
+*.swp
+
+# Misc
+.cache/
+/.pytest_cache/
+/.mypy_cache/
+
+# Agents
+.github/agents/
