@@ -85,5 +85,17 @@ docker-compose.local.yml
 /.pytest_cache/
 /.mypy_cache/
 
+# Next.js
+.next/
+out/
+
+# Monorepo specifically
+cli/.venv/
+frontend/.next/
+frontend/out/
+
 # Agents
 .github/agents/
+
+# Journals
+notion/

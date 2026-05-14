@@ -16,41 +16,41 @@
 **Duration:** Weeks 1–2 · **MRR:** $0 · **Active agents:** `ODIN` `THOR` `TYR` `NJORD` `KVASIR` `HEIMDALL`
 
 ### Infrastructure
-- [ ] Monorepo initialised (`backend/`, `frontend/`, `cli/`) with uv + pnpm
-- [ ] `.editorconfig`, `.gitignore`, `conventional commits` enforced
-- [ ] Docker Compose runs all services locally: `api`, `frontend`, `postgres`, `redis`, `celery-worker`
-- [ ] Hot reload working on both API and frontend in Docker
-- [ ] `docker compose up` completes and all services healthy in under 5 minutes on a clean machine
+- [x] Monorepo initialised (`backend/`, `frontend/`, `cli/`) with uv + pnpm
+- [x] `.editorconfig`, `.gitignore`, `conventional commits` enforced
+- [x] Docker Compose runs all services locally: `api`, `frontend`, `postgres`, `redis`, `celery-worker`
+- [x] Hot reload working on both API and frontend in Docker
+- [x] `docker compose up` completes and all services healthy in under 5 minutes on a clean machine
 
 
 ### Database
-- [ ] PostgreSQL 16 running in Docker with pgvector extension enabled
-- [ ] Alembic configured, migration `001_initial_schema.py` written
-- [ ] Tables created: `users`, `repos`, `endpoints`, `docs_versions`, `doc_reviews`, `subscriptions`, `chunks`
-- [ ] Foreign key constraints and soft-delete (`deleted_at`) pattern applied
-- [ ] Indices on: `repos.user_id`, `endpoints.repo_id`, `endpoints.status`
-- [ ] `chunks.embedding vector(1536)` column with IVFFlat index configured
+- [x] PostgreSQL 16 running in Docker with pgvector extension enabled
+- [x] Alembic configured, migration `001_initial_schema.py` written
+- [x] Tables created: `users`, `repos`, `endpoints`, `docs_versions`, `doc_reviews`, `subscriptions`, `chunks`
+- [x] Foreign key constraints and soft-delete (`deleted_at`) pattern applied
+- [x] Indices on: `repos.user_id`, `endpoints.repo_id`, `endpoints.status`
+- [x] `chunks.embedding vector(1536)` column with IVFFlat index configured
 
 ### Application Skeleton
-- [ ] FastAPI app runs, `/health` returns `{"status": "ok"}`
-- [ ] Supabase Auth JWT middleware validates bearer tokens on all protected routes
-- [ ] Structlog JSON logging with `request_id`, `user_id`, `endpoint`, `duration_ms` on every request
-- [ ] Pydantic v2 `Settings` loads all config from `.env`
-- [ ] `.env.example` documents every required environment variable
+- [x] FastAPI app runs, `/health` returns `{"status": "ok"}`
+- [x] Supabase Auth JWT middleware validates bearer tokens on all protected routes
+- [x] Structlog JSON logging with `request_id`, `user_id`, `endpoint`, `duration_ms` on every request
+- [x] Pydantic v2 `Settings` loads all config from `.env`
+- [x] `.env.example` documents every required environment variable
 
 
 ### CI/CD
-- [ ] GitHub Actions pipeline: lint → test → build on every PR
+- [x] GitHub Actions pipeline: lint → test → build on every PR
 - [ ] Backend: `ruff` lint + `mypy --strict` + `pytest` passing with coverage ≥ 80%
 - [ ] Frontend: `ESLint` + `tsc --noEmit` + `Vitest` all passing
-- [ ] TruffleHog pre-commit hook blocks any commit containing secrets
+- [x] TruffleHog pre-commit hook blocks any commit containing secrets
 - [ ] Azure staging environment live: backend + frontend + managed PostgreSQL + Redis
 - [ ] Staging auto-deploys on push to `main`
 
 ### Analytics
 - [ ] PostHog project created and API key stored in environment
-- [ ] `tracking_plan_v1.md` written by `KVASIR` and reviewed by `ODIN`
-- [ ] Core event names defined for: auth, repo lifecycle, endpoint review, docs export, billing
+- [x] `tracking_plan_v1.md` written by `KVASIR` and reviewed by `ODIN`
+- [x] Core event names defined for: auth, repo lifecycle, endpoint review, docs export, billing
 - [ ] Activation funnel configured in PostHog: signup → repo connect → scan → endpoint approved
 
 
@@ -60,17 +60,17 @@
 - [ ] Sentry alert rule: error rate > 1% → Slack `#alerts`
 
 ### Notion Workspace
-- [ ] Sprint board created: Backlog · In Progress · Review · Done
-- [ ] ADR (Architecture Decision Record) database created with template
-- [ ] Weekly brief template created for `ODIN`'s Monday reports
-- [ ] First ADR written: "Why PostgreSQL + pgvector over Pinecone"
+- [x] Sprint board created: Backlog · In Progress · Review · Done
+- [x] ADR (Architecture Decision Record) database created with template
+- [x] Weekly brief template created for `ODIN`'s Monday reports
+- [x] First ADR written: "Why PostgreSQL + pgvector over Pinecone"
 
 
 ### ✅ Phase Gate 0 → 1
 - [ ] All boxes above checked
 - [ ] `docker compose up` tested by at least one other person (not the author)
 - [ ] `ODIN` weekly brief template tested and sent to founder
-- [ ] Zero secrets in Git history (TruffleHog full-history scan clean)
+- [x] Zero secrets in Git history (TruffleHog full-history scan clean)
 
 ---
 

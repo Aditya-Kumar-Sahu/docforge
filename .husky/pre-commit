@@ -1,0 +1,1 @@
+MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit HEAD --fail
