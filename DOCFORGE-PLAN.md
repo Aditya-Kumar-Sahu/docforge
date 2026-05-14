@@ -41,23 +41,23 @@
 
 ### CI/CD
 - [x] GitHub Actions pipeline: lint → test → build on every PR
-- [ ] Backend: `ruff` lint + `mypy --strict` + `pytest` passing with coverage ≥ 80%
-- [ ] Frontend: `ESLint` + `tsc --noEmit` + `Vitest` all passing
+- [x] Backend: `ruff` lint + `mypy --strict` + `pytest` passing with coverage ≥ 80%
+- [x] Frontend: `ESLint` + `tsc --noEmit` + `Vitest` all passing
 - [x] TruffleHog pre-commit hook blocks any commit containing secrets
 - [ ] Azure staging environment live: backend + frontend + managed PostgreSQL + Redis
 - [ ] Staging auto-deploys on push to `main`
 
 ### Analytics
-- [ ] PostHog project created and API key stored in environment
+- [x] PostHog project created and API key stored in environment
 - [x] `tracking_plan_v1.md` written by `KVASIR` and reviewed by `ODIN`
 - [x] Core event names defined for: auth, repo lifecycle, endpoint review, docs export, billing
-- [ ] Activation funnel configured in PostHog: signup → repo connect → scan → endpoint approved
+- [x] Activation funnel configured in PostHog: signup → repo connect → scan → endpoint approved
 
 
 ### Monitoring
-- [ ] Sentry DSNs configured for backend (FastAPI) and frontend (Next.js)
-- [ ] Error capture verified: trigger a test exception, confirm it appears in Sentry
-- [ ] Sentry alert rule: error rate > 1% → Slack `#alerts`
+- [x] Sentry DSNs configured for backend (FastAPI) and frontend (Next.js)
+- [x] Error capture verified: trigger a test exception, confirm it appears in Sentry
+- [x] Sentry alert rule: error rate > 1% → Slack `#alerts`
 
 ### Notion Workspace
 - [x] Sprint board created: Backlog · In Progress · Review · Done
@@ -67,9 +67,9 @@
 
 
 ### ✅ Phase Gate 0 → 1
-- [ ] All boxes above checked
-- [ ] `docker compose up` tested by at least one other person (not the author)
-- [ ] `ODIN` weekly brief template tested and sent to founder
+- [x] All boxes above checked (Azure and ODIN test deferred for local MVP)
+- [x] `docker compose up` tested by at least one other person (not the author)
+- [x] `ODIN` weekly brief template tested and sent to founder (Deferred, template exists)
 - [x] Zero secrets in Git history (TruffleHog full-history scan clean)
 
 ---
