@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Any
 from sqlalchemy import String, Integer, DateTime, ForeignKey, Text, JSON, Index
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from pgvector.sqlalchemy import Vector
+from pgvector.sqlalchemy import Vector  # type: ignore
 
 class Base(DeclarativeBase):
     pass
@@ -38,19 +38,19 @@ class Endpoint(Base, TimestampMixin):
     handler_function: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     file_path: Mapped[str] = mapped_column(String)
     line_number: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    params_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-    response_schema_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-    generated_doc_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    params_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    response_schema_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    generated_doc_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     status: Mapped[str] = mapped_column(String, default="pending", index=True)
 
 class DocsVersion(Base, TimestampMixin):
     __tablename__ = "docs_versions"
     id: Mapped[int] = mapped_column(primary_key=True)
     repo_id: Mapped[int] = mapped_column(ForeignKey("repos.id"), index=True)
-    openapi_json: Mapped[dict] = mapped_column(JSON)
+    openapi_json: Mapped[dict[str, Any]] = mapped_column(JSON)
     generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     commit_sha: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    diff_summary: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    diff_summary: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
 class DocReview(Base, TimestampMixin):
     __tablename__ = "doc_reviews"
@@ -79,3 +79,4 @@ class Chunk(Base, TimestampMixin):
     __table_args__ = (
         Index('ix_chunks_embedding', 'embedding', postgresql_using='ivfflat', postgresql_with={'lists': 100}, postgresql_ops={'embedding': 'vector_cosine_ops'}),
     )
+

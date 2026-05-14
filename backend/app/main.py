@@ -10,7 +10,7 @@ app = FastAPI(title="DocForge API", version="0.1.0")
 app.add_middleware(CoreMiddleware)
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     logger.info("health_check_requested", endpoint="/health")
     return {"status": "ok"}
 

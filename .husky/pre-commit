@@ -1,1 +1,20 @@
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+echo "🔒 Running TruffleHog Secrets Scan..."
 MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit HEAD --fail
+
+echo "🐍 Running Backend Checks (Ruff, Mypy, Pytest)..."
+cd backend
+uv run ruff check .
+uv run mypy --strict app
+uv run pytest --cov=app
+cd ..
+
+echo "⚛️ Running Frontend Checks (ESLint, TSC)..."
+cd frontend
+npm run lint
+npx tsc --noEmit
+cd ..
+
+echo "✅ All pre-commit checks passed!"
