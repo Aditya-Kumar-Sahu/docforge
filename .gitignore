@@ -1,9 +1,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
 
 # Distribution / packaging
@@ -16,56 +15,90 @@ eggs/
 pip-wheel-metadata/
 
 # Virtual environments
+.venv/
 venv/
 ENV/
 env/
-.venv/
-backend/.venv/
+**/venv/
+**/.venv/
 
 # Environment / secrets
 .env
 .env.*
 .env.local
+.env*.local
+!.env.example
 
 # Python testing / coverage
 .pytest_cache/
+**/.pytest_cache/
+.ruff_cache/
+**/.ruff_cache/
 .tox/
 .nox/
 .coverage
+**/.coverage
 .coverage.*
 htmlcov/
+nosetests.xml
+coverage.xml
+*,cover
 
 # Type checkers / caches
 .mypy_cache/
+**/.mypy_cache/
 .pyright/
+.ipynb_checkpoints/
 
 # IDEs / editors
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 *.sublime-project
 *.sublime-workspace
 
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
 ehthumbs.db
 
-# Node
+# Node / Frontend
 node_modules/
+**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-dist/
-build/
+.pnpm-store/
+**/.pnpm-store/
+.next/
+**/.next/
+out/
+**/out/
+.eslintcache
+.stylelintcache
 .parcel-cache/
+.turbo/
+*.tsbuildinfo
 
-# Lockfiles (optional to ignore if you want to track them)
-# package-lock.json
-# yarn.lock
+# Python-specific
+.python-version
+hello.py
+dev_parser.py
+scratch_*.py
 
 # Logs
 *.log
+logs/
+*.pid
+*.seed
+*.pid.lock
 
 # Docker
 docker-compose.override.yml
@@ -75,27 +108,12 @@ docker-compose.local.yml
 # Database
 *.sqlite3
 *.db
+postgres_data/
 
-# Editor temp files
-*~
-*.swp
-
-# Misc
-.cache/
-/.pytest_cache/
-/.mypy_cache/
-
-# Next.js
-.next/
-out/
-
-# Monorepo specifically
-cli/.venv/
-frontend/.next/
-frontend/out/
-
-# Agents
+# Agents / Gemini CLI
+.gemini/
 .github/agents/
+! .gemini/config.json
 
-# Journals
+# Documentation / Journals
 notion/

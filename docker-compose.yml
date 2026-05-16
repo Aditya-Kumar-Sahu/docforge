@@ -31,7 +31,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: uv run fastapi dev app/main.py --host 0.0.0.0 --port 8000
+    command: ["uv", "run", "fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
     volumes:
       - ./backend:/app
     ports:
@@ -46,12 +46,18 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "uv run python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 
   celery-worker:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: uv run celery -A app.core.celery_app worker --loglevel=info
+    command: ["uv", "run", "celery", "-A", "app.core.celery_app", "worker", "--loglevel=info"]
     volumes:
       - ./backend:/app
     env_file:
@@ -66,12 +72,18 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "uv run celery -A app.core.celery_app inspect ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    command: npm run dev
+    command: sh -c "echo 'only-allow-trusted-dependencies=false' >> .npmrc && pnpm install --no-frozen-lockfile && pnpm run dev"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -79,6 +91,14 @@ services:
       - "3000:3000"
     environment:
       - WATCHPACK_POLLING=true
+      - CI=true
+      - PNPM_CONFIG_CONFIRM_MODULES_PURGE=false
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000', (res) => { if (res.statusCode === 200) { process.exit(0); } else { process.exit(1); } }).on('error', (e) => { process.exit(1); })\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
 volumes:
   postgres_data:
