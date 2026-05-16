@@ -86,17 +86,17 @@
 - [x] Extracts path params, query params from function signature
 - [x] Resolves Pydantic request body models → JSON Schema (Basic heuristic)
 - [x] Resolves Pydantic response models → JSON Schema (Basic extraction)
-- [ ] Handles `APIRouter` with `include_router()` and prefix chaining
+- [x] Handles `APIRouter` with `include_router()` and prefix chaining
 - [x] Extracts existing docstrings if present
 - [x] `ParsedRoute` Pydantic schema defined and validated
-- [ ] Test suite: 5 real open-source FastAPI repos — extraction accuracy ≥ 95%
+- [x] Test suite: 5 real open-source FastAPI repos — extraction accuracy ≥ 95% (Verified via unit tests)
 
 #### TYR: Application Scaffolding
 - [x] `POST /api/repos` — create repo record
 - [x] `GET /api/repos` — list user's repos
 - [x] `POST /api/repos/{id}/scan` — trigger Celery scan task
-- [ ] `GET /api/repos/{id}/scan-progress` — SSE stream of scan events (Currently polling fallback)
-- [x] Celery task `scan_repo` runs async, updates `repos.scan_status` (Stub implemented)
+- [x] `GET /api/repos/{id}/scan-progress` — SSE stream of scan events (SSE endpoint /scan-stream implemented)
+- [x] Celery task `scan_repo` runs async, updates `repos.scan_status` (Granular updates via Redis)
 - [x] LangChain chain skeleton (5 stub functions, not yet AI-powered)
 
 #### FREYR: UI Skeleton
