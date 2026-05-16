@@ -1,11 +1,18 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from typing import Any
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Request
+from typing import Any, AsyncGenerator, cast
 from app.core.analytics import capture_event
+from sse_starlette.sse import EventSourceResponse
+import json
+import asyncio
+from redis.asyncio import Redis
+from app.core.config import settings
 
 router = APIRouter(prefix="/api/repos", tags=["repos"])
 
 REPOS_DB: dict[str, dict[str, Any]] = {}
-SCAN_STATUS: dict[str, dict[str, Any]] = {}
+
+async def get_redis() -> Redis:
+    return Redis.from_url(settings.REDIS_URL, decode_responses=True)
 
 @router.post("")
 async def create_repo(repo_data: dict[str, Any]) -> dict[str, Any]:
@@ -34,7 +41,8 @@ async def scan_repo(id: str, background_tasks: BackgroundTasks) -> dict[str, str
     if id not in REPOS_DB:
         raise HTTPException(status_code=404, detail="Repo not found")
         
-    SCAN_STATUS[id] = {"status": "pending", "progress": 0}
+    redis = await get_redis()
+    await redis.set(f"scan_status:{id}", json.dumps({"status": "pending", "progress": 0}))
     
     # Instrumentation
     capture_event(
@@ -50,6 +58,35 @@ async def scan_repo(id: str, background_tasks: BackgroundTasks) -> dict[str, str
 
 @router.get("/{id}/scan-progress")
 async def get_scan_progress(id: str) -> dict[str, Any]:
-    if id not in SCAN_STATUS:
+    redis = await get_redis()
+    status = await redis.get(f"scan_status:{id}")
+    if not status:
         return {"status": "not_started"}
-    return SCAN_STATUS[id]
+    return cast(dict[str, Any], json.loads(status))
+
+@router.get("/{id}/scan-stream")
+async def scan_stream(id: str, request: Request) -> EventSourceResponse:
+    if id not in REPOS_DB:
+        raise HTTPException(status_code=404, detail="Repo not found")
+
+    async def event_generator() -> AsyncGenerator[dict[str, Any], None]:
+        redis = await get_redis()
+        last_status = None
+        while True:
+            # Check if client disconnected
+            if await request.is_disconnected():
+                break
+
+            status_json = await redis.get(f"scan_status:{id}")
+            if status_json:
+                if status_json != last_status:
+                    yield {"data": status_json}
+                    last_status = status_json
+                
+                status_data = json.loads(status_json)
+                if status_data.get("status") in ("completed", "failed"):
+                    break
+            
+            await asyncio.sleep(1)
+
+    return EventSourceResponse(event_generator())

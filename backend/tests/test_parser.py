@@ -36,7 +36,7 @@ async def create_user(user: User) -> UserResponse:
     assert routes[0].request_model is None
     
     assert routes[1].method == "POST"
-    assert routes[1].path == ""
+    assert routes[1].path == "/users"
     assert routes[1].handler_name == "create_user"
     assert routes[1].request_model == {"name": "user", "type": "User"}
     assert routes[1].response_model == {"type": "UserResponse"}

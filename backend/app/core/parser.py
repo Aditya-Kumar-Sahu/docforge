@@ -38,6 +38,23 @@ class FastAPIParser:
         ) @route_def
         """)
 
+        self.router_query = Query(self.language, """
+        (assignment
+            left: (identifier) @router_var
+            right: (call
+                function: (identifier) @class_name
+                (#eq? @class_name "APIRouter")
+                arguments: (argument_list
+                    (keyword_argument
+                        name: (identifier) @arg_name
+                        (#eq? @arg_name "prefix")
+                        value: (string) @prefix
+                    )?
+                )
+            )
+        )
+        """)
+
     def parse_file(self, file_path: str) -> List[ParsedRoute]:
         if not os.path.exists(file_path):
             return []
@@ -47,30 +64,60 @@ class FastAPIParser:
             
         return self.parse_code(source_code, file_path)
 
+    def _resolve_model_type(self, type_hint: str) -> str:
+        """Helper to extract the core model name from Optional[Model], List[Model], etc."""
+        if not type_hint:
+            return "Any"
+        # Handle List[Model], Optional[Model], Union[Model, None]
+        match = re.search(r'(?:List|Optional|Union|dict)\[([^,\]]+)', type_hint)
+        if match:
+            return match.group(1).strip()
+        return type_hint
+
     def parse_code(self, source_code: str, file_path: str = "unknown") -> List[ParsedRoute]:
         tree = self.parser.parse(bytes(source_code, "utf8"))
+        
+        # 1. Detect Routers and their prefixes
+        router_prefixes = {}
+        router_cursor = QueryCursor(self.router_query)
+        for _, captures in router_cursor.matches(tree.root_node):
+            var_node = captures.get('router_var', [None])[0]
+            prefix_node = captures.get('prefix', [None])[0]
+            if var_node and var_node.text:
+                var_name = var_node.text.decode('utf8')
+                prefix = ""
+                if prefix_node and prefix_node.text:
+                    prefix = prefix_node.text.decode('utf8').strip('\'"')
+                router_prefixes[var_name] = prefix
+
+        # 2. Parse Routes
         cursor = QueryCursor(self.route_query)
         matches = cursor.matches(tree.root_node)
         
         routes = []
         
         for _, captures in matches:
-            # In tree_sitter 0.22+, matches returns (pattern_index, captures_dict)
-            # captures_dict is { "capture_name": [nodes] }
-            
             if 'method' in captures and 'path' in captures and 'handler_name' in captures:
-                # Get the first node for each capture
+                app_obj_node = captures['app_obj'][0] if isinstance(captures['app_obj'], list) else captures['app_obj']
                 method_node = captures['method'][0] if isinstance(captures['method'], list) else captures['method']
                 path_node = captures['path'][0] if isinstance(captures['path'], list) else captures['path']
                 handler_node = captures['handler_name'][0] if isinstance(captures['handler_name'], list) else captures['handler_name']
                 
-                if not (method_node and path_node and handler_node):
+                if not (method_node and method_node.text and path_node and path_node.text and handler_node and handler_node.text):
                     continue
 
-                method = method_node.text.decode('utf8').upper() if method_node.text is not None else ""
-                path = path_node.text.decode('utf8').strip('\'"') if path_node.text is not None else ""
+                app_obj = app_obj_node.text.decode('utf8') if app_obj_node and app_obj_node.text else "app"
+                method = method_node.text.decode('utf8').upper()
+                path = path_node.text.decode('utf8').strip('\'"')
                 
-                handler_name = handler_node.text.decode('utf8') if handler_node.text is not None else ""
+                # Prepend router prefix if applicable
+                if app_obj in router_prefixes:
+                    prefix = router_prefixes[app_obj]
+                    path = (prefix.rstrip('/') + '/' + path.lstrip('/')).rstrip('/')
+                    if not path.startswith('/'):
+                        path = '/' + path
+                
+                handler_name = handler_node.text.decode('utf8')
                 line_number = handler_node.start_point.row + 1
                 
                 docstring = None
@@ -80,12 +127,10 @@ class FastAPIParser:
                         first_stmt = body_node.named_child(0)
                         if first_stmt and first_stmt.type == 'expression_statement':
                             expr = first_stmt.named_child(0)
-                            if expr and expr.type == 'string' and expr.text is not None:
+                            if expr and expr.type == 'string' and expr.text:
                                 docstring = expr.text.decode('utf8').strip('\'"')
 
-                # Extract Path Parameters from path string
                 path_param_names = re.findall(r'\{([a-zA-Z0-9_]+)\}', path)
-                
                 path_parameters = []
                 query_parameters = []
                 request_model = None
@@ -97,12 +142,12 @@ class FastAPIParser:
                     
                     if param.type in ('typed_parameter', 'typed_default_parameter'):
                         for child in param.named_children:
-                            if child.type == 'identifier':
-                                name = child.text.decode('utf8') if child.text is not None else ""
-                            elif child.type == 'type':
-                                type_hint = child.text.decode('utf8') if child.text is not None else ""
-                    elif param.type == 'identifier':
-                        name = param.text.decode('utf8') if param.text is not None else ""
+                            if child.type == 'identifier' and child.text:
+                                name = child.text.decode('utf8')
+                            elif child.type == 'type' and child.text:
+                                type_hint = child.text.decode('utf8')
+                    elif param.type == 'identifier' and param.text:
+                        name = param.text.decode('utf8')
                         type_hint = "Any"
                         
                     if not name:
@@ -110,24 +155,23 @@ class FastAPIParser:
                         
                     param_info = {"name": name, "type": type_hint}
                     
-                    # Heuristic for request_model vs path/query param
                     if name in path_param_names:
                         path_parameters.append(param_info)
                     else:
-                        # In FastAPI, usually capitalized types denote a request body Pydantic model
-                        if type_hint and type_hint[0].isupper() and type_hint not in ("Any", "List", "Dict", "Optional", "Union"):
+                        core_type = self._resolve_model_type(type_hint or "")
+                        if core_type and core_type[0].isupper() and core_type not in ("Any", "List", "Dict", "Optional", "Union", "Set", "Tuple"):
                             request_model = {"name": name, "type": type_hint}
                         else:
                             query_parameters.append(param_info)
 
                 response_model = None
                 if 'return_type' in captures:
-                    node = captures['return_type'][0] if isinstance(captures['return_type'], list) else captures['return_type']
-                    if node and node.text is not None:
+                    node = captures['return_type'][0]
+                    if node and node.text:
                         response_model = {"type": node.text.decode('utf8')}
                 elif 'response_model_arg' in captures:
-                    node = captures['response_model_arg'][0] if isinstance(captures['response_model_arg'], list) else captures['response_model_arg']
-                    if node and node.text is not None:
+                    node = captures['response_model_arg'][0]
+                    if node and node.text:
                         response_model = {"type": node.text.decode('utf8')}
 
                 route = ParsedRoute(
