@@ -6,6 +6,7 @@ from app.core.logger import configure_logging
 from app.core.middleware import CoreMiddleware
 from app.core.config import settings
 from app.core.analytics import init_analytics
+from app.api.repos import router as repos_router
 
 if settings.SENTRY_DSN:
     sentry_sdk.init(
@@ -31,6 +32,8 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.add_middleware(CoreMiddleware)
+
+app.include_router(repos_router)
 
 @app.get("/health")
 async def health_check() -> dict[str, str]:
