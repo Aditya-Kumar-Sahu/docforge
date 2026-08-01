@@ -23,10 +23,12 @@ class Repo(Base, TimestampMixin):
     __tablename__ = "repos"
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    url: Mapped[str] = mapped_column(String)
     github_repo_id: Mapped[str] = mapped_column(String)
     name: Mapped[str] = mapped_column(String)
     language: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     framework: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    scan_status: Mapped[str] = mapped_column(String, default="pending")
     last_scanned_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
 class Endpoint(Base, TimestampMixin):

@@ -1,20 +1,30 @@
+#!/usr/bin/env sh
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+# ── TruffleHog Secrets Scan ────────────────────────────────────────────────
 echo "🔒 Running TruffleHog Secrets Scan..."
-MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit HEAD --fail
+if command -v docker &> /dev/null && docker info &> /dev/null 2>&1; then
+  MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit HEAD --fail
+else
+  echo "⚠️  Docker not available. Skipping TruffleHog scan."
+  echo "   Install Docker or run 'npx trufflehog git file://.' manually."
+fi
 
+# ── Backend Checks ─────────────────────────────────────────────────────────
 echo "🐍 Running Backend Checks (Ruff, Mypy, Pytest)..."
 cd backend
 uv run ruff check .
 uv run mypy --strict app
-uv run pytest --cov=app
+uv run pytest --cov=app --cov-fail-under=80
 cd ..
 
-echo "⚛️ Running Frontend Checks (ESLint, TSC)..."
+# ── Frontend Checks ────────────────────────────────────────────────────────
+echo "⚛️  Running Frontend Checks (ESLint, TSC, Vitest)..."
 cd frontend
-npm run lint
-npx tsc --noEmit
+pnpm run lint
+pnpm exec tsc --noEmit
+pnpm run test
 cd ..
 
 echo "✅ All pre-commit checks passed!"

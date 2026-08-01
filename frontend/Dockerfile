@@ -5,16 +5,15 @@ WORKDIR /app
 
 # Install pnpm
 RUN npm install -g pnpm
-ENV PNPM_CONFIG_ONLY_ALLOW_TRUSTED_DEPENDENCIES=false
 
-# Copy package files and lockfile
-# We copy pnpm-lock.yaml if it exists to leverage caching
-COPY package.json pnpm-lock.yaml* .npmrc ./
+# Set pnpm configuration for allowed builds
+ENV pnpm_config_allow_builds='{"@sentry/cli":true,"core-js":true,"protobufjs":true,"unrs-resolver":true}'
 
-# Install dependencies
-# We remove --ignore-scripts to allow trusted dependencies to build
-# We use --no-frozen-lockfile to avoid issues with potential lockfile mismatches in the container
-RUN pnpm install --no-frozen-lockfile
+# Copy package files and lockfile first for better layer caching
+COPY package.json pnpm-lock.yaml .npmrc ./
+
+# Install dependencies at build time with frozen lockfile for reproducibility
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the application
 COPY . .

@@ -91,6 +91,7 @@ out/
 .python-version
 hello.py
 dev_parser.py
+debug_ts.py
 scratch_*.py
 
 # Logs
@@ -116,4 +117,4 @@ postgres_data/
 ! .gemini/config.json
 
 # Documentation / Journals
-notion/
+# Note: notion/ directory is kept in-repo as local documentation source.

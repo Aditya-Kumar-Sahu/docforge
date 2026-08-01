@@ -3,12 +3,9 @@
 import { useEffect } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { createClient, AuthChangeEvent } from '@supabase/supabase-js';
+import { AuthChangeEvent } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import posthog from 'posthog-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-url.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function LoginPage() {
   useEffect(() => {

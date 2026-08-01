@@ -55,6 +55,28 @@ class FastAPIParser:
         )
         """)
 
+        # Detects: app.include_router(some_router, prefix="/v2")
+        # Captures: @include_app, @include_router_var, @include_prefix (optional)
+        self.include_router_query = Query(self.language, """
+        (expression_statement
+            (call
+                function: (attribute
+                    object: (identifier) @include_app
+                    attribute: (identifier) @include_method
+                    (#eq? @include_method "include_router")
+                )
+                arguments: (argument_list
+                    (identifier) @include_router_var
+                    (keyword_argument
+                        name: (identifier) @kw
+                        (#eq? @kw "prefix")
+                        value: (string) @include_prefix
+                    )?
+                )
+            )
+        )
+        """)
+
     def parse_file(self, file_path: str) -> List[ParsedRoute]:
         if not os.path.exists(file_path):
             return []
@@ -76,9 +98,9 @@ class FastAPIParser:
 
     def parse_code(self, source_code: str, file_path: str = "unknown") -> List[ParsedRoute]:
         tree = self.parser.parse(bytes(source_code, "utf8"))
-        
-        # 1. Detect Routers and their prefixes
-        router_prefixes = {}
+
+        # 1. Detect APIRouter definitions and their own prefixes
+        router_prefixes: dict[str, str] = {}
         router_cursor = QueryCursor(self.router_query)
         for _, captures in router_cursor.matches(tree.root_node):
             var_node = captures.get('router_var', [None])[0]
@@ -90,10 +112,30 @@ class FastAPIParser:
                     prefix = prefix_node.text.decode('utf8').strip('\'"')
                 router_prefixes[var_name] = prefix
 
-        # 2. Parse Routes
+        # 2. Detect include_router() calls and merge additional prefixes
+        #    e.g. app.include_router(users_router, prefix="/api/v1")
+        #    → users_router's effective prefix = its own prefix + "/api/v1"
+        include_cursor = QueryCursor(self.include_router_query)
+        for _, captures in include_cursor.matches(tree.root_node):
+            router_var_node = captures.get('include_router_var', [None])[0]
+            extra_prefix_node = captures.get('include_prefix', [None])[0]
+            if router_var_node and router_var_node.text:
+                router_var = router_var_node.text.decode('utf8')
+                extra_prefix = ""
+                if extra_prefix_node and extra_prefix_node.text:
+                    extra_prefix = extra_prefix_node.text.decode('utf8').strip('\'"')
+                if router_var in router_prefixes:
+                    existing = router_prefixes[router_var]
+                    # Merge: include_router prefix comes first (outer), own prefix second
+                    merged = (extra_prefix.rstrip('/') + '/' + existing.lstrip('/')).rstrip('/')
+                    if not merged.startswith('/'):
+                        merged = '/' + merged
+                    router_prefixes[router_var] = merged
+
+        # 3. Parse Routes
         cursor = QueryCursor(self.route_query)
         matches = cursor.matches(tree.root_node)
-        
+
         routes = []
         
         for _, captures in matches:

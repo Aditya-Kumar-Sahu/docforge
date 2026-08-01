@@ -3,6 +3,7 @@
 import { useSSE } from '@/hooks/useSSE';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { authFetch } from '@/utils/api';
 
 interface ScanProgress {
   status: string;
@@ -18,8 +19,11 @@ export default function ScanProgressPage() {
 
   useEffect(() => {
     if (!isConnected && !data) {
-      fetch(`/api/repos/${id}/scan-progress`)
-        .then(res => res.json())
+      authFetch(`/api/repos/${id}/scan-progress`)
+        .then(res => {
+          if (res.ok) return res.json();
+          throw new Error('Fallback fetch failed');
+        })
         .then(resData => setFallbackData(resData))
         .catch(err => console.error("Polling error", err));
     }
@@ -39,8 +43,12 @@ export default function ScanProgressPage() {
       )}
 
       <div className="w-full bg-gray-200 rounded-full h-4 mb-4 overflow-hidden">
-        <div 
-          className="bg-blue-600 h-4 rounded-full transition-all duration-500 ease-in-out" 
+        <div
+          role="progressbar"
+          aria-valuenow={currentData?.progress || 0}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          className="bg-blue-600 h-4 rounded-full transition-all duration-500 ease-in-out"
           style={{ width: `${currentData?.progress || 0}%` }}
         ></div>
       </div>
