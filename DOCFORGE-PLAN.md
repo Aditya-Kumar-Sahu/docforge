@@ -109,16 +109,16 @@
 ### Sprint 2 (Week 4) — AI Chain
 
 #### TYR: LangChain 5-Step Pipeline
-- [ ] `PROMPT_REGISTRY` dict implemented — every prompt versioned (e.g., `doc_generator_v1`)
-- [ ] **Step 1 — Route Analyzer**: prompt extracts purpose, action type, side effects, auth requirement
-- [ ] **Step 2 — Doc Generator**: produces title, description, parameters, request body, responses, code examples
-- [ ] **Step 3 — Quality Gate**: scores accuracy/completeness/clarity/examples/tone (each 1–10)
-- [ ] Quality gate verdict logic: `approve` (≥7.5 mean, ≥8.0 accuracy) / `revise` / `reject`
-- [ ] **Retry loop**: up to 3 attempts; `fix_instructions` injected into next attempt prompt
-- [ ] After 3 failures: mark endpoint `needs_human_review=True`, do not block scan
-- [ ] Gemini 2.0 Flash integrated via LiteLLM gateway
-- [ ] `temperature` set explicitly per step (0.0–0.1 for analysis, 0.2 for doc gen, 0.7+ for creative)
-- [ ] LangChain chain skeleton (5 stub functions, now fully AI-powered)
+- [x] `PROMPT_REGISTRY` dict implemented — every prompt versioned (e.g., `doc_generator_v1`)
+- [x] **Step 1 — Route Analyzer**: prompt extracts purpose, action type, side effects, auth requirement
+- [x] **Step 2 — Doc Generator**: produces title, description, parameters, request body, responses, code examples
+- [x] **Step 3 — Quality Gate**: scores accuracy/completeness/clarity/examples/tone (each 1–10)
+- [x] Quality gate verdict logic: `approve` (≥7.5 mean, ≥8.0 accuracy) / `revise` / `reject`
+- [x] **Retry loop**: up to 3 attempts; `fix_instructions` injected into next attempt prompt
+- [x] After 3 failures: mark endpoint `needs_human_review=True`, do not block scan
+- [x] Gemini 2.0 Flash integrated via LiteLLM gateway
+- [x] `temperature` set explicitly per step (0.0–0.1 for analysis, 0.2 for doc gen, 0.7+ for creative)
+- [x] LangChain chain skeleton (5 stub functions, now fully AI-powered)
 
 ### Sprint 3 (Week 5) — Review UI + OpenAPI Assembly
 

@@ -21,6 +21,7 @@ from celery import shared_task  # type: ignore[import-untyped]
 from app.core.analytics import capture_event
 from app.core.config import settings
 from app.core.parser import FastAPIParser
+from app.core.pipeline import run_pipeline
 
 
 def _update_progress(r: redis.Redis, repo_id: str, status: str, progress: int) -> None:
@@ -56,7 +57,6 @@ def _update_repo_scan_status(repo_id: str, scan_status: str) -> None:
 def _persist_endpoints(repo_id: str, routes: list[Any]) -> int:
     """Persist parsed routes as Endpoint rows in the database."""
     import psycopg2
-    import psycopg2.extras
 
     sync_url = settings.DATABASE_URL.replace("+asyncpg", "").replace(
         "postgresql+psycopg2", "postgresql"
@@ -105,6 +105,75 @@ def _persist_endpoints(repo_id: str, routes: list[Any]) -> int:
         log.error("endpoint_persist_failed", repo_id=repo_id, error=str(exc))
 
     return saved
+
+def _run_ai_pipeline_for_repo(repo_id: str, routes: list[Any], tmpdir: str) -> None:
+    """Run AI pipeline for each endpoint and update the DB records."""
+    import psycopg2
+    import structlog
+    
+    log = structlog.get_logger()
+    sync_url = settings.DATABASE_URL.replace("+asyncpg", "").replace("postgresql+psycopg2", "postgresql")
+    
+    for route in routes:
+        try:
+            # Read source file for context
+            source_code = ""
+            source_file = os.path.join(tmpdir, route.file_path)
+            if os.path.exists(source_file):
+                with open(source_file, encoding="utf-8") as f:
+                    source_code = f.read()
+            
+            result = run_pipeline(route, source_code)
+            
+            # Update endpoint in DB
+            conn = psycopg2.connect(sync_url)
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE endpoints
+                    SET generated_doc_json = %s,
+                        quality_score = %s,
+                        quality_dimensions = %s,
+                        attempts = %s,
+                        needs_human_review = %s,
+                        source_code_snippet = %s,
+                        status = %s,
+                        updated_at = NOW()
+                    WHERE repo_id = %s AND path = %s AND method = %s
+                    """,
+                    (
+                        json.dumps(result.generated_doc.model_dump()) if result.generated_doc else None,
+                        result.quality_score,
+                        json.dumps(result.quality_dimensions.model_dump()) if result.quality_dimensions else None,
+                        result.attempts,
+                        result.needs_human_review,
+                        source_code[:5000],  # store first 5000 chars
+                        "needs_review" if result.needs_human_review else "pending_review",
+                        int(repo_id),
+                        route.path,
+                        route.method,
+                    ),
+                )
+            conn.commit()
+            conn.close()
+            
+            log.info(
+                "pipeline_endpoint_processed",
+                repo_id=repo_id,
+                path=route.path,
+                method=route.method,
+                verdict=result.final_verdict,
+                quality_score=result.quality_score,
+            )
+        
+        except Exception as exc:  # noqa: BLE001
+            log.error(
+                "pipeline_endpoint_failed",
+                repo_id=repo_id,
+                path=route.path,
+                method=route.method,
+                error=str(exc),
+            )
 
 
 @shared_task  # type: ignore[untyped-decorator]
@@ -194,6 +263,9 @@ def scan_repo_task(repo_id: str, user_id: str = "anonymous") -> dict[str, Any]:
             # ── Step 4: Persist endpoints to DB ──────────────────────────
             _update_progress(r, repo_id, "saving_endpoints", 80)
             saved_count = _persist_endpoints(repo_id, all_routes)
+
+            _update_progress(r, repo_id, "running_ai_pipeline", 85)
+            _run_ai_pipeline_for_repo(repo_id, all_routes, tmpdir)
 
             _update_repo_scan_status(repo_id, "completed")
             _update_progress(r, repo_id, "completed", 100)

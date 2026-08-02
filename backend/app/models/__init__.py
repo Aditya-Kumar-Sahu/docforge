@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional, Any
-from sqlalchemy import String, Integer, DateTime, ForeignKey, Text, JSON, Index
+from sqlalchemy import String, Integer, DateTime, ForeignKey, Text, JSON, Index, Float, Boolean
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from pgvector.sqlalchemy import Vector  # type: ignore
 
@@ -43,6 +43,11 @@ class Endpoint(Base, TimestampMixin):
     params_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     response_schema_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     generated_doc_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    quality_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    quality_dimensions: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    needs_human_review: Mapped[bool] = mapped_column(Boolean, default=False)
+    source_code_snippet: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String, default="pending", index=True)
 
 class DocsVersion(Base, TimestampMixin):

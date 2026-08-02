@@ -22,6 +22,11 @@ dependencies = [
     "supabase>=2.30.0",
     "tree-sitter>=0.25.2",
     "tree-sitter-python>=0.25.0",
+    "langchain>=0.3",
+    "langchain-community>=0.3",
+    "langchain-core>=0.3",
+    "langchain-litellm>=0.1.0",
+    "litellm>=1.57",
 ]
 
 [dependency-groups]
