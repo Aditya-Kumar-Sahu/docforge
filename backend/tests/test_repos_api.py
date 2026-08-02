@@ -17,12 +17,12 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.main import app
 from app.models import Base
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
-TEST_JWT_SECRET = "test-secret-key-that-is-long-enough"
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ TEST_JWT_SECRET = "test-secret-key-that-is-long-enough"
 def _make_token(sub: str = "1", expired: bool = False) -> str:
     payload: dict = {"sub": sub, "aud": "authenticated"}
     payload["exp"] = int(time.time()) + (-3600 if expired else 3600)
-    return jwt.encode(payload, TEST_JWT_SECRET, algorithm="HS256")
+    return jwt.encode(payload, settings.SUPABASE_JWT_SECRET, algorithm="HS256")
 
 
 # ── Fixtures ───────────────────────────────────────────────────────────────
