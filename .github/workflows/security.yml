@@ -1,0 +1,30 @@
+name: Security Scans (Snyk & Semgrep)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  security:
+    name: SAST & Dependency Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep SAST Scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/ci
+          generateSarif: "1"
+
+      - name: Run Snyk Security Scan
+        uses: snyk/actions/python-3.10@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: --severity-threshold=high --file=backend/pyproject.toml

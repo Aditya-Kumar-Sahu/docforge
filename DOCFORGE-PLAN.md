@@ -143,33 +143,33 @@
 ### Sprint 4 (Week 6) — Quality Hardening
 
 #### TYR: Prompt Tuning
-- [ ] Pipeline run on 20 diverse real-world endpoints (mix of CRUD, complex, auth-protected)
-- [ ] Per-endpoint: tokens used, quality score, attempts, latency recorded in LangSmith
-- [ ] Endpoints scoring < 6.5 identified and root-caused to a specific pipeline step
-- [ ] Prompts updated, re-run, delta measured
-- [ ] Final benchmark: ≥ 80% of 20 endpoints approve on first attempt
-- [ ] Final benchmark: mean quality score ≥ 7.0
+- [x] Pipeline run on 20 diverse real-world endpoints (mix of CRUD, complex, auth-protected)
+- [x] Per-endpoint: tokens used, quality score, attempts, latency recorded in LangSmith
+- [x] Endpoints scoring < 6.5 identified and root-caused to a specific pipeline step
+- [x] Prompts updated, re-run, delta measured
+- [x] Final benchmark: ≥ 80% of 20 endpoints approve on first attempt
+- [x] Final benchmark: mean quality score ≥ 7.0
 
 #### HEIMDALL: Security Review
-- [ ] OWASP API Security Top 10 checklist completed for all endpoints
-- [ ] Every protected endpoint returns 401 without valid JWT (automated test)
-- [ ] Input validation tested: malformed repo URLs, path traversal attempts
-- [ ] Prompt injection test suite run on all 3 LangChain prompts
-- [ ] Rate limiting verified: per-user limits on `/scan` and AI endpoints
-- [ ] `Snyk` dependency scan clean (no critical CVEs)
-- [ ] `Semgrep` SAST scan clean
+- [x] OWASP API Security Top 10 checklist completed for all endpoints
+- [x] Every protected endpoint returns 401 without valid JWT (automated test)
+- [x] Input validation tested: malformed repo URLs, path traversal attempts
+- [x] Prompt injection test suite run on all 3 LangChain prompts
+- [x] Rate limiting verified: per-user limits on `/scan` and AI endpoints
+- [x] `Snyk` dependency scan clean (no critical CVEs)
+- [x] `Semgrep` SAST scan clean
 
 #### Performance
-- [ ] `/health` p95 < 10ms
-- [ ] All non-AI endpoints p95 < 200ms (load test with Locust or k6)
-- [ ] SSE first event arrives < 500ms after scan trigger
+- [x] `/health` p95 < 10ms
+- [x] All non-AI endpoints p95 < 200ms (load test with Locust or k6)
+- [x] SSE first event arrives < 500ms after scan trigger
 
 ### 🔐 Phase Gate 1 → 2
-- [ ] Mean doc quality score ≥ 7.0 on 20-endpoint benchmark
-- [ ] ≥ 80% of endpoints approve on first LLM attempt
-- [ ] Heimdall OWASP checklist signed off
-- [ ] Prompt versions committed to `PROMPT_REGISTRY`
-- [ ] All LangSmith traces visible and tagged correctly
+- [x] Mean doc quality score ≥ 7.0 on 20-endpoint benchmark
+- [x] ≥ 80% of endpoints approve on first LLM attempt
+- [x] Heimdall OWASP checklist signed off
+- [x] Prompt versions committed to `PROMPT_REGISTRY`
+- [x] All LangSmith traces visible and tagged correctly
 
 ---
 
