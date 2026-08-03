@@ -4,6 +4,7 @@ import { useSSE } from '@/hooks/useSSE';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { authFetch } from '@/utils/api';
+import Link from 'next/link';
 
 interface ScanProgress {
   status: string;
@@ -53,9 +54,18 @@ export default function ScanProgressPage() {
         ></div>
       </div>
       
-      <div className="text-sm font-medium text-gray-500 capitalize">
+      <div className="text-sm font-medium text-gray-500 capitalize mb-6">
         Status: {currentData?.status || 'Initializing...'}
       </div>
+
+      {(currentData?.progress === 100 || currentData?.status === 'completed') && (
+        <Link 
+          href={`/repos/${id}/endpoints`}
+          className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 w-full transition-colors"
+        >
+          Review Endpoints &rarr;
+        </Link>
+      )}
     </div>
   );
 }

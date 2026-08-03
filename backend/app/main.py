@@ -7,6 +7,8 @@ from app.core.middleware import CoreMiddleware
 from app.core.config import settings
 from app.core.analytics import init_analytics
 from app.api.repos import router as repos_router
+from app.api.endpoints import router as endpoints_router
+from app.api.docs import router as docs_router
 
 if settings.SENTRY_DSN:
     sentry_sdk.init(
@@ -34,14 +36,17 @@ if settings.BACKEND_CORS_ORIGINS:
 app.add_middleware(CoreMiddleware)
 
 app.include_router(repos_router)
+app.include_router(endpoints_router, prefix="/api")
+app.include_router(docs_router, prefix="/api")
+
 
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     logger.info("health_check_requested", endpoint="/health")
     return {"status": "ok"}
 
+
 @app.get("/sentry-debug")
 async def trigger_error() -> None:
     division_by_zero = 1 / 0
     del division_by_zero
-

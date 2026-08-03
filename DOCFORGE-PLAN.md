@@ -123,22 +123,22 @@
 ### Sprint 3 (Week 5) — Review UI + OpenAPI Assembly
 
 #### FREYR: Human Review UI
-- [ ] `EndpointListPage`: table with method badge, path, status, quality score
-- [ ] Filter by status (pending / approved / rejected) and by file path
-- [ ] "Approve all with quality score > 7" bulk action
-- [ ] Keyboard shortcuts: `j`/`k` navigate, `a` approve, `e` edit, `r` reject
-- [ ] `EndpointReviewCard` drawer: generated doc (left) + source code (right, syntax highlighted)
-- [ ] Edit mode: inline editing of title, description, parameter descriptions
-- [ ] Quality score badge: green ≥ 7, amber 5–7, red < 5 with dimension breakdown tooltip
-- [ ] `[Approve]` `[Edit & Approve]` `[Reject & Regenerate]` actions all wired to API
+- [x] `EndpointListPage`: table with method badge, path, status, quality score
+- [x] Filter by status (pending / approved / rejected) and by file path
+- [x] "Approve all with quality score > 7" bulk action
+- [x] Keyboard shortcuts: `j`/`k` navigate, `a` approve, `e` edit, `r` reject
+- [x] `EndpointReviewCard` drawer: generated doc (left) + source code (right, syntax highlighted)
+- [x] Edit mode: inline editing of title, description, parameter descriptions
+- [x] Quality score badge: green ≥ 7, amber 5–7, red < 5 with dimension breakdown tooltip
+- [x] `[Approve]` `[Edit & Approve]` `[Reject & Regenerate]` actions all wired to API
 
 #### TYR: OpenAPI Assembly
-- [ ] `OpenAPIAssembler` class produces valid OpenAPI 3.1.0 from approved endpoints
-- [ ] `openapi-spec-validator` runs on every assembled spec — raises `ValidationError` if invalid
-- [ ] Shared schemas extracted into `/components/schemas` (no duplication)
-- [ ] Every endpoint has `operationId` (prevents Redoc warnings)
-- [ ] `GET /api/repos/{id}/docs` returns assembled OpenAPI JSON
-- [ ] `GET /api/repos/{id}/export?format=markdown` returns readable markdown summary
+- [x] `OpenAPIAssembler` class produces valid OpenAPI 3.1.0 from approved endpoints
+- [x] `openapi-spec-validator` runs on every assembled spec — raises `ValidationError` if invalid
+- [x] Shared schemas extracted into `/components/schemas` (no duplication)
+- [x] Every endpoint has `operationId` (prevents Redoc warnings)
+- [x] `GET /api/repos/{id}/docs` returns assembled OpenAPI JSON
+- [x] `GET /api/repos/{id}/export?format=markdown` returns readable markdown summary
 
 ### Sprint 4 (Week 6) — Quality Hardening
 

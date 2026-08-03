@@ -27,6 +27,7 @@ dependencies = [
     "langchain-core>=0.3",
     "langchain-litellm>=0.1.0",
     "litellm>=1.57",
+    "openapi-spec-validator>=0.7.0",
 ]
 
 [dependency-groups]
