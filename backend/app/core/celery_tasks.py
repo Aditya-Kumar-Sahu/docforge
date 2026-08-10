@@ -292,3 +292,56 @@ def scan_repo_task(repo_id: str, user_id: str = "anonymous") -> dict[str, Any]:
     )
 
     return {"status": "completed", "repo_id": repo_id, "endpoints_saved": saved_count}
+
+
+@shared_task  # type: ignore[untyped-decorator]
+def process_pr_task(
+    github_repo_id: str,
+    installation_id: int,
+    owner: str,
+    repo_name: str,
+    pr_number: int,
+    head_sha: str,
+) -> dict[str, Any]:
+    """
+    Process a GitHub PR event: run incremental scan on changed endpoints
+    and post a documentation comment to the PR.
+
+    Sprint 2 implementation pending — stub only.
+    """
+    import structlog
+    log = structlog.get_logger()
+    log.info(
+        "process_pr_task_stub",
+        github_repo_id=github_repo_id,
+        pr_number=pr_number,
+        owner=owner,
+        repo_name=repo_name,
+        head_sha=head_sha,
+    )
+    return {"status": "stub", "pr_number": pr_number}
+
+
+@shared_task  # type: ignore[untyped-decorator]
+def process_pr_merged_task(
+    github_repo_id: str,
+    installation_id: int,
+    owner: str,
+    repo_name: str,
+    pr_number: int,
+) -> dict[str, Any]:
+    """
+    Process a merged PR: trigger a full repo re-scan to incorporate changes.
+
+    Sprint 2 implementation pending — stub only.
+    """
+    import structlog
+    log = structlog.get_logger()
+    log.info(
+        "process_pr_merged_task_stub",
+        github_repo_id=github_repo_id,
+        pr_number=pr_number,
+        owner=owner,
+        repo_name=repo_name,
+    )
+    return {"status": "stub", "pr_number": pr_number}

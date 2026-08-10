@@ -15,3 +15,6 @@ os.environ.setdefault(
 )
 os.environ.setdefault("REDIS_URL", "redis://127.0.0.1:6379/0")
 os.environ.setdefault("POSTHOG_API_KEY", "phc_test")
+os.environ.setdefault("GITHUB_WEBHOOK_SECRET", "test-webhook-secret")
+os.environ.setdefault("GITHUB_APP_ID", "12345")
+os.environ.setdefault("GITHUB_APP_PRIVATE_KEY", "")  # overridden per-test where needed

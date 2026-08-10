@@ -179,14 +179,14 @@
 ### GitHub App Integration (TYR)
 - [ ] GitHub App created in GitHub Developer Settings
 - [ ] App private key stored securely (Azure Key Vault)
-- [ ] `POST /webhooks/github` endpoint verifies HMAC-SHA256 signature
-- [ ] `pull_request.opened` event received and parsed correctly
-- [ ] `pull_request.closed` (merged) event received and parsed correctly
+- [x] `POST /webhooks/github` endpoint verifies HMAC-SHA256 signature
+- [x] `pull_request.opened` event received and parsed correctly
+- [x] `pull_request.closed` (merged) event received and parsed correctly
 - [ ] Changed files extracted from PR diff → only modified route files re-scanned
 - [ ] Incremental scan runs only on changed endpoints (not full repo re-scan)
 - [ ] PR comment posted with: new endpoints documented + changed endpoints with diff
 - [ ] PR comment format: clear section for NEW / CHANGED / REMOVED endpoints
-- [ ] `github_pr_comments` table prevents duplicate comments on re-push
+- [x] `github_pr_comments` table prevents duplicate comments on re-push
 
 ### Dogfood Execution
 - [ ] GitHub App installed on `docforge/docforge-backend` repo

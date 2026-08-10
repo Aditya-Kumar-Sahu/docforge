@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     LITELLM_MODEL: str = "gemini/gemini-2.0-flash"
     LANGSMITH_API_KEY: str | None = None
     LANGSMITH_TRACING: bool = False
+    
+    GITHUB_APP_ID: str = ""
+    GITHUB_APP_PRIVATE_KEY: str = ""  # PEM content, newlines as \\n in env
+    GITHUB_WEBHOOK_SECRET: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

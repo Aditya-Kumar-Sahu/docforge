@@ -9,6 +9,7 @@ from app.core.analytics import init_analytics
 from app.api.repos import router as repos_router
 from app.api.endpoints import router as endpoints_router
 from app.api.docs import router as docs_router
+from app.api.webhooks import router as webhooks_router
 
 if settings.SENTRY_DSN:
     sentry_sdk.init(
@@ -35,6 +36,7 @@ if settings.BACKEND_CORS_ORIGINS:
 
 app.add_middleware(CoreMiddleware)
 
+app.include_router(webhooks_router)
 app.include_router(repos_router)
 app.include_router(endpoints_router, prefix="/api")
 app.include_router(docs_router, prefix="/api")

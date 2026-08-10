@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional, Any
-from sqlalchemy import String, Integer, DateTime, ForeignKey, Text, JSON, Index, Float, Boolean
+from sqlalchemy import String, Integer, DateTime, ForeignKey, Text, JSON, Index, Float, Boolean, BigInteger, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from pgvector.sqlalchemy import Vector  # type: ignore
 
@@ -87,3 +87,16 @@ class Chunk(Base, TimestampMixin):
         Index('ix_chunks_embedding', 'embedding', postgresql_using='ivfflat', postgresql_with={'lists': 100}, postgresql_ops={'embedding': 'vector_cosine_ops'}),
     )
 
+
+class GitHubPRComment(Base, TimestampMixin):
+    __tablename__ = "github_pr_comments"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    repo_id: Mapped[int] = mapped_column(ForeignKey("repos.id"), index=True)
+    pr_number: Mapped[int] = mapped_column(Integer)
+    github_comment_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    commit_sha: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    comment_body: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("repo_id", "pr_number", name="uq_github_pr_comments_repo_pr"),
+    )
