@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 from typing import Any
 
 import redis
@@ -74,8 +75,8 @@ def _persist_endpoints(repo_id: str, routes: list[Any]) -> int:
                     INSERT INTO endpoints
                         (repo_id, method, path, handler_function, file_path,
                          line_number, params_json, response_schema_json, status,
-                         created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'pending', NOW(), NOW())
+                         attempts, needs_human_review, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'pending', 0, False, NOW(), NOW())
                     """,
                     (
                         int(repo_id),
@@ -165,6 +166,8 @@ def _run_ai_pipeline_for_repo(repo_id: str, routes: list[Any], tmpdir: str) -> N
                 verdict=result.final_verdict,
                 quality_score=result.quality_score,
             )
+            # Small pacing sleep to prevent bulk rate limit spikes on LLM API
+            time.sleep(0.5)
         
         except Exception as exc:  # noqa: BLE001
             log.error(

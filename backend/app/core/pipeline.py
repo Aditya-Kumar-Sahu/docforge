@@ -78,16 +78,39 @@ class PipelineResult(BaseModel):
     prompt_versions: dict[str, str]  # snapshot of PROMPT_REGISTRY used
 
 
-def _call_llm(chain: Any, inputs: dict[str, Any]) -> dict[str, Any]:
-    """Invoke a LangChain chain and parse the JSON response."""
-    response = chain.invoke(inputs)
-    content = response.content if hasattr(response, "content") else str(response)
-    # Strip markdown code fences if LLM wraps in ```json ... ```
-    content = content.strip()
-    if content.startswith("```"):
-        lines = content.split("\n")
-        content = "\n".join(lines[1:-1]) if len(lines) > 2 else content
-    return json.loads(content)  # type: ignore[no-any-return]
+def _call_llm(chain: Any, inputs: dict[str, Any], max_retries: int = 5) -> dict[str, Any]:
+    """Invoke a LangChain chain with exponential backoff retries for rate limits and parse the JSON response."""
+    import time
+    import random
+
+    last_error: Exception | None = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = chain.invoke(inputs)
+            content = response.content if hasattr(response, "content") else str(response)
+            # Strip markdown code fences if LLM wraps in ```json ... ```
+            content = content.strip()
+            if content.startswith("```"):
+                lines = content.split("\n")
+                content = "\n".join(lines[1:-1]) if len(lines) > 2 else content
+            return json.loads(content)  # type: ignore[no-any-return]
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            err_str = str(exc).lower()
+            # If rate limit or temporary server error, sleep with exponential backoff
+            if any(term in err_str for term in ("429", "rate", "limit", "resource_exhausted", "quota", "500", "502", "503", "504")) and attempt < max_retries:
+                backoff = (2 ** attempt) + random.uniform(0.5, 1.5)
+                log.warning("llm_rate_limit_backoff", attempt=attempt, backoff_seconds=round(backoff, 2), error=str(exc))
+                time.sleep(backoff)
+            else:
+                if attempt == max_retries:
+                    log.error("llm_call_exhausted_retries", attempt=attempt, error=str(exc))
+                    raise exc
+                time.sleep(1.0)
+
+    if last_error:
+        raise last_error
+    raise RuntimeError("LLM call failed without returning a response")
 
 
 def _run_analyzer(route: ParsedRoute, source_code: str) -> dict[str, Any]:

@@ -2,7 +2,11 @@ import { supabase } from '@/lib/supabase';
 
 export async function authFetch(url: string, options: RequestInit = {}) {
   const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token;
+  let token = session?.access_token;
+
+  if (!token && typeof window !== 'undefined') {
+    token = localStorage.getItem('docforge_dev_token') || undefined;
+  }
 
   const headers = new Headers(options.headers);
   if (token) {

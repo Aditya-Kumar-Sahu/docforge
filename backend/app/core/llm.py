@@ -25,4 +25,5 @@ def get_llm(temperature: float = 0.1) -> ChatLiteLLM:
         model=settings.LITELLM_MODEL,
         temperature=temperature,
         max_tokens=4096,
+        max_retries=5,
     )

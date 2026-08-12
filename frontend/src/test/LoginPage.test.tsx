@@ -4,6 +4,18 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
+// Mock next/navigation — useRouter is not available outside the Next.js App Router context in jsdom
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+  }),
+  usePathname: () => "/login",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 // Mock Supabase auth UI components (they rely on browser APIs not available in jsdom)
 vi.mock("@supabase/auth-ui-react", () => ({
   Auth: ({ providers }: { providers: string[] }) => (
@@ -22,6 +34,7 @@ vi.mock("@supabase/auth-ui-shared", () => ({
 vi.mock("@/lib/supabase", () => ({
   supabase: {
     auth: {
+      getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
       onAuthStateChange: vi.fn(() => ({
         data: { subscription: { unsubscribe: vi.fn() } },
       })),

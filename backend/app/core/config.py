@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     POSTHOG_API_KEY: str | None = None
     POSTHOG_HOST: str = "https://us.i.posthog.com"
     GEMINI_API_KEY: str = ""
-    LITELLM_MODEL: str = "gemini/gemini-2.0-flash"
+    LITELLM_MODEL: str = "gemini/gemini-2.5-flash"
     LANGSMITH_API_KEY: str | None = None
     LANGSMITH_TRACING: bool = False
     
